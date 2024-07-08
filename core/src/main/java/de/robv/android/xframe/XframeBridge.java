@@ -18,7 +18,7 @@
  * Copyright (C) 2021 - 2022 LSPosed Contributors
  */
 
-package de.robv.android.xposed;
+package de.robv.android.xframe;
 
 import android.app.ActivityThread;
 import android.content.res.Resources;
@@ -42,8 +42,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import de.robv.android.xposed.callbacks.XC_InitPackageResources;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
+import de.robv.android.xframe.callbacks.XC_InitPackageResources;
+import de.robv.android.xframe.callbacks.XC_LoadPackage;
 import io.github.libxposed.api.XposedInterface;
 
 /**
@@ -267,7 +267,7 @@ public final class XposedBridge {
     /**
      * Adds a callback to be executed when an app ("Android package") is loaded.
      *
-     * <p class="note">You probably don't need to call this. Simply implement {@link IXposedHookLoadPackage}
+     * <p class="note">You probably don't need to call this. Simply implement {@link IXframeHookLoadPackage}
      * in your module class and Xposed will take care of registering it as a callback.
      *
      * @param callback The callback to be executed.
@@ -282,7 +282,7 @@ public final class XposedBridge {
     /**
      * Adds a callback to be executed when the resources for an app are initialized.
      *
-     * <p class="note">You probably don't need to call this. Simply implement {@link IXposedHookInitPackageResources}
+     * <p class="note">You probably don't need to call this. Simply implement {@link IXframeHookInitPackageResources}
      * in your module class and Xposed will take care of registering it as a callback.
      *
      * @param callback The callback to be executed.

@@ -18,16 +18,16 @@
  * Copyright (C) 2021 LSPosed Contributors
  */
 
-package de.robv.android.xposed;
+package de.robv.android.xframe;
 
 import static org.lsposed.lspd.core.ApplicationServiceClient.serviceClient;
 import static org.lsposed.lspd.deopt.PrebuiltMethodsDeopter.deoptResourceMethods;
-import static de.robv.android.xposed.XposedBridge.hookAllMethods;
-import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
-import static de.robv.android.xposed.XposedHelpers.getObjectField;
-import static de.robv.android.xposed.XposedHelpers.getParameterIndexByType;
-import static de.robv.android.xposed.XposedHelpers.setStaticObjectField;
+import static de.robv.android.xframe.XposedBridge.hookAllMethods;
+import static de.robv.android.xframe.XposedHelpers.callMethod;
+import static de.robv.android.xframe.XposedHelpers.findAndHookMethod;
+import static de.robv.android.xframe.XposedHelpers.getObjectField;
+import static de.robv.android.xframe.XposedHelpers.getParameterIndexByType;
+import static de.robv.android.xframe.XposedHelpers.setStaticObjectField;
 
 import android.app.ActivityThread;
 import android.content.pm.ApplicationInfo;
@@ -58,8 +58,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import de.robv.android.xposed.callbacks.XC_InitPackageResources;
-import de.robv.android.xposed.callbacks.XCallback;
+import de.robv.android.xframe.callbacks.XC_InitPackageResources;
+import de.robv.android.xframe.callbacks.XCallback;
 import hidden.HiddenApiBridge;
 
 public final class XposedInit {
@@ -271,22 +271,22 @@ public final class XposedInit {
 
                 final Object moduleInstance = moduleClass.newInstance();
 
-                if (moduleInstance instanceof IXposedHookZygoteInit) {
-                    IXposedHookZygoteInit.StartupParam param = new IXposedHookZygoteInit.StartupParam();
+                if (moduleInstance instanceof IXframeHookZygoteInit) {
+                    IXframeHookZygoteInit.StartupParam param = new IXframeHookZygoteInit.StartupParam();
                     param.modulePath = apk;
                     param.startsSystemServer = startsSystemServer;
-                    ((IXposedHookZygoteInit) moduleInstance).initZygote(param);
+                    ((IXframeHookZygoteInit) moduleInstance).initZygote(param);
                     count++;
                 }
 
-                if (moduleInstance instanceof IXposedHookLoadPackage) {
-                    XposedBridge.hookLoadPackage(new IXposedHookLoadPackage.Wrapper((IXposedHookLoadPackage) moduleInstance));
+                if (moduleInstance instanceof IXframeHookLoadPackage) {
+                    XposedBridge.hookLoadPackage(new IXframeHookLoadPackage.Wrapper((IXframeHookLoadPackage) moduleInstance));
                     count++;
                 }
 
-                if (moduleInstance instanceof IXposedHookInitPackageResources) {
+                if (moduleInstance instanceof IXframeHookInitPackageResources) {
                     hookResources();
-                    XposedBridge.hookInitPackageResources(new IXposedHookInitPackageResources.Wrapper((IXposedHookInitPackageResources) moduleInstance));
+                    XposedBridge.hookInitPackageResources(new IXframeHookInitPackageResources.Wrapper((IXframeHookInitPackageResources) moduleInstance));
                     count++;
                 }
             } catch (Throwable t) {
