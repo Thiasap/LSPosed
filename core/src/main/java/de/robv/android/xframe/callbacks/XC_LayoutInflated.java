@@ -18,13 +18,13 @@
  * Copyright (C) 2021 LSPosed Contributors
  */
 
-package de.robv.android.xposed.callbacks;
+package de.robv.android.xframe.callbacks;
 
 import android.content.res.XResources;
 import android.content.res.XResources.ResourceNames;
 import android.view.View;
 
-import de.robv.android.xposed.XposedBridge.CopyOnWriteSortedSet;
+import de.robv.android.xframe.XframeBridge.CopyOnWriteSortedSet;
 
 /**
  * Callback for hooking layouts. Such callbacks can be passed to {@link XResources#hookLayout}

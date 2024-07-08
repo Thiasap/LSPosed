@@ -35,15 +35,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.github.libxposed.api.XposedInterface;
-import io.github.libxposed.api.XposedModule;
-import io.github.libxposed.api.XposedModuleInterface;
-import io.github.libxposed.api.errors.XposedFrameworkError;
-import io.github.libxposed.api.utils.DexParser;
+import io.github.libxframe.api.XframeInterface;
+import io.github.libxframe.api.XframeModule;
+import io.github.libxframe.api.XframeModuleInterface;
+import io.github.libxframe.api.errors.XframeFrameworkError;
+import io.github.libxframe.api.utils.DexParser;
 
 
 @SuppressLint("NewApi")
-public class LSPosedContext implements XposedInterface {
+public class LSPosedContext implements XframeInterface {
 
     private static final String TAG = "LSPosedContext";
 
@@ -51,7 +51,7 @@ public class LSPosedContext implements XposedInterface {
     public static String appDir;
     public static String processName;
 
-    static final Set<XposedModule> modules = ConcurrentHashMap.newKeySet();
+    static final Set<XframeModule> modules = ConcurrentHashMap.newKeySet();
 
     private final String mPackageName;
     private final ApplicationInfo mApplicationInfo;
@@ -64,8 +64,8 @@ public class LSPosedContext implements XposedInterface {
         this.service = service;
     }
 
-    public static void callOnPackageLoaded(XposedModuleInterface.PackageLoadedParam param) {
-        for (XposedModule module : modules) {
+    public static void callOnPackageLoaded(XframeModuleInterface.PackageLoadedParam param) {
+        for (XframeModule module : modules) {
             try {
                 module.onPackageLoaded(param);
             } catch (Throwable t) {
@@ -74,8 +74,8 @@ public class LSPosedContext implements XposedInterface {
         }
     }
 
-    public static void callOnSystemServerLoaded(XposedModuleInterface.SystemServerLoadedParam param) {
-        for (XposedModule module : modules) {
+    public static void callOnSystemServerLoaded(XframeModuleInterface.SystemServerLoadedParam param) {
+        for (XframeModule module : modules) {
             try {
                 module.onSystemServerLoaded(param);
             } catch (Throwable t) {
@@ -94,9 +94,9 @@ public class LSPosedContext implements XposedInterface {
                 sb.append(module.apkPath).append("!/lib/").append(abi).append(File.pathSeparator);
             }
             var librarySearchPath = sb.toString();
-            var initLoader = XposedModule.class.getClassLoader();
+            var initLoader = XframeModule.class.getClassLoader();
             var mcl = LspModuleClassLoader.loadApk(module.apkPath, module.file.preLoadedDexes, librarySearchPath, initLoader);
-            if (mcl.loadClass(XposedModule.class.getName()).getClassLoader() != initLoader) {
+            if (mcl.loadClass(XframeModule.class.getName()).getClassLoader() != initLoader) {
                 Log.e(TAG, "  Cannot load module: " + module.packageName);
                 Log.e(TAG, "  The Xposed API classes are compiled into the module's APK.");
                 Log.e(TAG, "  This may cause strange issues and must be fixed by the module developer.");
@@ -106,13 +106,13 @@ public class LSPosedContext implements XposedInterface {
             for (var entry : module.file.moduleClassNames) {
                 var moduleClass = mcl.loadClass(entry);
                 Log.d(TAG, "  Loading class " + moduleClass);
-                if (!XposedModule.class.isAssignableFrom(moduleClass)) {
+                if (!XframeModule.class.isAssignableFrom(moduleClass)) {
                     Log.e(TAG, "    This class doesn't implement any sub-interface of XposedModule, skipping it");
                     continue;
                 }
                 try {
-                    var moduleEntry = moduleClass.getConstructor(XposedInterface.class, XposedModuleInterface.ModuleLoadedParam.class);
-                    var moduleContext = (XposedModule) moduleEntry.newInstance(ctx, new XposedModuleInterface.ModuleLoadedParam() {
+                    var moduleEntry = moduleClass.getConstructor(XframeInterface.class, XframeModuleInterface.ModuleLoadedParam.class);
+                    var moduleContext = (XframeModule) moduleEntry.newInstance(ctx, new XframeModuleInterface.ModuleLoadedParam() {
                         @Override
                         public boolean isSystemServer() {
                             return isSystemServer;
@@ -306,7 +306,7 @@ public class LSPosedContext implements XposedInterface {
                 return new LSPosedRemotePreferences(service, n);
             } catch (RemoteException e) {
                 log("Failed to get remote preferences", e);
-                throw new XposedFrameworkError(e);
+                throw new XframeFrameworkError(e);
             }
         });
     }
@@ -318,7 +318,7 @@ public class LSPosedContext implements XposedInterface {
             return service.getRemoteFileList();
         } catch (RemoteException e) {
             log("Failed to list remote files", e);
-            throw new XposedFrameworkError(e);
+            throw new XframeFrameworkError(e);
         }
     }
 

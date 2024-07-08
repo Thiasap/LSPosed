@@ -26,33 +26,33 @@ import android.util.Log;
 
 import org.lsposed.lspd.util.Hookers;
 
-import de.robv.android.xposed.XposedHelpers;
-import de.robv.android.xposed.XposedInit;
-import io.github.libxposed.api.XposedInterface;
-import io.github.libxposed.api.annotations.AfterInvocation;
-import io.github.libxposed.api.annotations.XposedHooker;
+import de.robv.android.xframe.XframeHelpers;
+import de.robv.android.xframe.XframeInit;
+import io.github.libxframe.api.XframeInterface;
+import io.github.libxframe.api.annotations.AfterInvocation;
+import io.github.libxframe.api.annotations.XframeHooker;
 
 // when a package is loaded for an existing process, trigger the callbacks as well
-@XposedHooker
-public class LoadedApkCtorHooker implements XposedInterface.Hooker {
+@XframeHooker
+public class LoadedApkCtorHooker implements XframeInterface.Hooker {
 
     @AfterInvocation
-    public static void afterHookedMethod(XposedInterface.AfterHookCallback callback) {
+    public static void afterHookedMethod(XframeInterface.AfterHookCallback callback) {
         Hookers.logD("LoadedApk#<init> starts");
 
         try {
             LoadedApk loadedApk = (LoadedApk) callback.getThisObject();
             assert loadedApk != null;
             String packageName = loadedApk.getPackageName();
-            Object mAppDir = XposedHelpers.getObjectField(loadedApk, "mAppDir");
+            Object mAppDir = XframeHelpers.getObjectField(loadedApk, "mAppDir");
             Hookers.logD("LoadedApk#<init> ends: " + mAppDir);
 
-            if (!XposedInit.disableResources) {
+            if (!XframeInit.disableResources) {
                 XResources.setPackageNameForResDir(packageName, loadedApk.getResDir());
             }
 
             if (packageName.equals("android")) {
-                if (XposedInit.startsSystemServer) {
+                if (XframeInit.startsSystemServer) {
                     Hookers.logD("LoadedApk#<init> is android, skip: " + mAppDir);
                     return;
                 } else {
@@ -60,7 +60,7 @@ public class LoadedApkCtorHooker implements XposedInterface.Hooker {
                 }
             }
 
-            if (!XposedInit.loadedPackagesInProcess.add(packageName)) {
+            if (!XframeInit.loadedPackagesInProcess.add(packageName)) {
                 Hookers.logD("LoadedApk#<init> has been loaded before, skip: " + mAppDir);
                 return;
             }

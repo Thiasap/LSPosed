@@ -23,5 +23,5 @@ package de.robv.android.xframe;
 /**
  * Marker interface for Xposed modules. Cannot be implemented directly.
  */
-/* package */ interface IXposedMod {
+/* package */ interface IXframeMod {
 }

@@ -27,7 +27,7 @@ package de.robv.android.xframe;
  * @hide Xposed no longer hooks command-line tools, therefore this interface shouldn't be
  * implemented anymore.
  */
-public interface IXposedHookCmdInit extends IXposedMod {
+public interface IXframeHookCmdInit extends IXframeMod {
     /**
      * Called very early during startup of a command-line tool.
      *

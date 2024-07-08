@@ -2,16 +2,16 @@ package org.lsposed.lspd.hooker;
 
 import android.app.ActivityThread;
 
-import de.robv.android.xposed.XposedInit;
-import io.github.libxposed.api.XposedInterface;
-import io.github.libxposed.api.annotations.AfterInvocation;
-import io.github.libxposed.api.annotations.XposedHooker;
+import de.robv.android.xframe.XframeInit;
+import io.github.libxframe.api.XframeInterface;
+import io.github.libxframe.api.annotations.AfterInvocation;
+import io.github.libxframe.api.annotations.XframeHooker;
 
-@XposedHooker
-public class AttachHooker implements XposedInterface.Hooker {
+@XframeHooker
+public class AttachHooker implements XframeInterface.Hooker {
 
     @AfterInvocation
-    public static void afterHookedMethod(XposedInterface.AfterHookCallback callback) {
-        XposedInit.loadModules((ActivityThread) callback.getThisObject());
+    public static void afterHookedMethod(XframeInterface.AfterHookCallback callback) {
+        XframeInit.loadModules((ActivityThread) callback.getThisObject());
     }
 }

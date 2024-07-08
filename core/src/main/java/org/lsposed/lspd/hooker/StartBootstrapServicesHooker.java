@@ -27,25 +27,25 @@ import androidx.annotation.NonNull;
 import org.lsposed.lspd.impl.LSPosedContext;
 import org.lsposed.lspd.util.Hookers;
 
-import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedInit;
-import de.robv.android.xposed.callbacks.XC_LoadPackage;
-import io.github.libxposed.api.XposedInterface;
-import io.github.libxposed.api.XposedModuleInterface;
-import io.github.libxposed.api.annotations.BeforeInvocation;
-import io.github.libxposed.api.annotations.XposedHooker;
+import de.robv.android.xframe.XframeBridge;
+import de.robv.android.xframe.XframeInit;
+import de.robv.android.xframe.callbacks.XC_LoadPackage;
+import io.github.libxframe.api.XframeInterface;
+import io.github.libxframe.api.XframeModuleInterface;
+import io.github.libxframe.api.annotations.BeforeInvocation;
+import io.github.libxframe.api.annotations.XframeHooker;
 
-@XposedHooker
-public class StartBootstrapServicesHooker implements XposedInterface.Hooker {
+@XframeHooker
+public class StartBootstrapServicesHooker implements XframeInterface.Hooker {
 
     @BeforeInvocation
     public static void beforeHookedMethod() {
         logD("SystemServer#startBootstrapServices() starts");
 
         try {
-            XposedInit.loadedPackagesInProcess.add("android");
+            XframeInit.loadedPackagesInProcess.add("android");
 
-            XC_LoadPackage.LoadPackageParam lpparam = new XC_LoadPackage.LoadPackageParam(XposedBridge.sLoadedPackageCallbacks);
+            XC_LoadPackage.LoadPackageParam lpparam = new XC_LoadPackage.LoadPackageParam(XframeBridge.sLoadedPackageCallbacks);
             lpparam.packageName = "android";
             lpparam.processName = "android"; // it's actually system_server, but other functions return this as well
             lpparam.classLoader = HandleSystemServerProcessHooker.systemServerCL;
@@ -53,7 +53,7 @@ public class StartBootstrapServicesHooker implements XposedInterface.Hooker {
             lpparam.isFirstApplication = true;
             XC_LoadPackage.callAll(lpparam);
 
-            LSPosedContext.callOnSystemServerLoaded(new XposedModuleInterface.SystemServerLoadedParam() {
+            LSPosedContext.callOnSystemServerLoaded(new XframeModuleInterface.SystemServerLoadedParam() {
                 @Override
                 @NonNull
                 public ClassLoader getClassLoader() {

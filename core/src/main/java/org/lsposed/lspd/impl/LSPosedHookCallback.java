@@ -6,9 +6,9 @@ import androidx.annotation.Nullable;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Member;
 
-import io.github.libxposed.api.XposedInterface;
+import io.github.libxframe.api.XframeInterface;
 
-public class LSPosedHookCallback<T extends Executable> implements XposedInterface.BeforeHookCallback, XposedInterface.AfterHookCallback {
+public class LSPosedHookCallback<T extends Executable> implements XframeInterface.BeforeHookCallback, XframeInterface.AfterHookCallback {
 
     public Member method;
 

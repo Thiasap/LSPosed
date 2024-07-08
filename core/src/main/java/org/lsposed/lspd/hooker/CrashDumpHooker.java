@@ -4,15 +4,15 @@ import android.util.Log;
 
 import org.lsposed.lspd.impl.LSPosedBridge;
 
-import io.github.libxposed.api.XposedInterface;
-import io.github.libxposed.api.annotations.BeforeInvocation;
-import io.github.libxposed.api.annotations.XposedHooker;
+import io.github.libxframe.api.XframeInterface;
+import io.github.libxframe.api.annotations.BeforeInvocation;
+import io.github.libxframe.api.annotations.XframeHooker;
 
-@XposedHooker
-public class CrashDumpHooker implements XposedInterface.Hooker {
+@XframeHooker
+public class CrashDumpHooker implements XframeInterface.Hooker {
 
     @BeforeInvocation
-    public static void beforeHookedMethod(XposedInterface.BeforeHookCallback callback) {
+    public static void beforeHookedMethod(XframeInterface.BeforeHookCallback callback) {
         try {
             var e = (Throwable) callback.getArgs()[0];
             LSPosedBridge.log("Crash unexpectedly: " + Log.getStackTraceString(e));

@@ -22,12 +22,12 @@ package de.robv.android.xframe;
 
 import static org.lsposed.lspd.core.ApplicationServiceClient.serviceClient;
 import static org.lsposed.lspd.deopt.PrebuiltMethodsDeopter.deoptResourceMethods;
-import static de.robv.android.xframe.XposedBridge.hookAllMethods;
-import static de.robv.android.xframe.XposedHelpers.callMethod;
-import static de.robv.android.xframe.XposedHelpers.findAndHookMethod;
-import static de.robv.android.xframe.XposedHelpers.getObjectField;
-import static de.robv.android.xframe.XposedHelpers.getParameterIndexByType;
-import static de.robv.android.xframe.XposedHelpers.setStaticObjectField;
+import static de.robv.android.xframe.XframeBridge.hookAllMethods;
+import static de.robv.android.xframe.XframeHelpers.callMethod;
+import static de.robv.android.xframe.XframeHelpers.findAndHookMethod;
+import static de.robv.android.xframe.XframeHelpers.getObjectField;
+import static de.robv.android.xframe.XframeHelpers.getParameterIndexByType;
+import static de.robv.android.xframe.XframeHelpers.setStaticObjectField;
 
 import android.app.ActivityThread;
 import android.content.pm.ApplicationInfo;
@@ -62,8 +62,8 @@ import de.robv.android.xframe.callbacks.XC_InitPackageResources;
 import de.robv.android.xframe.callbacks.XCallback;
 import hidden.HiddenApiBridge;
 
-public final class XposedInit {
-    private static final String TAG = XposedBridge.TAG;
+public final class XframeInit {
+    private static final String TAG = XframeBridge.TAG;
     public static boolean startsSystemServer = false;
 
     public static volatile boolean disableResources = false;
@@ -117,7 +117,7 @@ public final class XposedInit {
             createResourceMethods.add("getOrCreateResources");
         }
 
-        final Class<?> classActivityRes = XposedHelpers.findClassIfExists("android.app.ResourcesManager$ActivityResource", classGTLR.getClassLoader());
+        final Class<?> classActivityRes = XframeHelpers.findClassIfExists("android.app.ResourcesManager$ActivityResource", classGTLR.getClassLoader());
         var hooker = new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam<?> param) {
@@ -150,8 +150,8 @@ public final class XposedInit {
                         resourceReferences.add(new WeakReference<>(newRes));
                     } else {
                         // Android S createResourcesForActivity()
-                        var activityRes = XposedHelpers.newInstance(classActivityRes);
-                        XposedHelpers.setObjectField(activityRes, "resources", new WeakReference<>(newRes));
+                        var activityRes = XframeHelpers.newInstance(classActivityRes);
+                        XframeHelpers.setObjectField(activityRes, "resources", new WeakReference<>(newRes));
                         resourceReferences.add(activityRes);
                     }
                 }
@@ -175,7 +175,7 @@ public final class XposedInit {
                         XResources.XTypedArray newResult =
                                 new XResources.XTypedArray((Resources) param.args[0]);
                         int len = (int) param.args[1];
-                        Method resizeMethod = XposedHelpers.findMethodBestMatch(
+                        Method resizeMethod = XframeHelpers.findMethodBestMatch(
                                 TypedArray.class, "resize", int.class);
                         resizeMethod.setAccessible(true);
                         resizeMethod.invoke(newResult, len);
@@ -185,8 +185,8 @@ public final class XposedInit {
 
         // Replace system resources
         XResources systemRes = new XResources(
-                (ClassLoader) XposedHelpers.getObjectField(Resources.getSystem(), "mClassLoader"), null);
-        HiddenApiBridge.Resources_setImpl(systemRes, (ResourcesImpl) XposedHelpers.getObjectField(Resources.getSystem(), "mResourcesImpl"));
+                (ClassLoader) XframeHelpers.getObjectField(Resources.getSystem(), "mClassLoader"), null);
+        HiddenApiBridge.Resources_setImpl(systemRes, (ResourcesImpl) XframeHelpers.getObjectField(Resources.getSystem(), "mResourcesImpl"));
         setStaticObjectField(Resources.class, "mSystem", systemRes);
 
         XResources.init(latestResKey);
@@ -200,13 +200,13 @@ public final class XposedInit {
 
         // Replace the returned resources with our subclass.
         var newRes = new XResources(
-                (ClassLoader) XposedHelpers.getObjectField(param.getResult(), "mClassLoader"), resDir);
-        HiddenApiBridge.Resources_setImpl(newRes, (ResourcesImpl) XposedHelpers.getObjectField(param.getResult(), "mResourcesImpl"));
+                (ClassLoader) XframeHelpers.getObjectField(param.getResult(), "mClassLoader"), resDir);
+        HiddenApiBridge.Resources_setImpl(newRes, (ResourcesImpl) XframeHelpers.getObjectField(param.getResult(), "mResourcesImpl"));
 
         // Invoke handleInitPackageResources().
         if (newRes.isFirstLoad()) {
             String packageName = newRes.getPackageName();
-            XC_InitPackageResources.InitPackageResourcesParam resparam = new XC_InitPackageResources.InitPackageResourcesParam(XposedBridge.sInitPackageResourcesCallbacks);
+            XC_InitPackageResources.InitPackageResourcesParam resparam = new XC_InitPackageResources.InitPackageResourcesParam(XframeBridge.sInitPackageResourcesCallbacks);
             resparam.packageName = packageName;
             resparam.res = newRes;
             XCallback.callAll(resparam);
@@ -237,7 +237,7 @@ public final class XposedInit {
     }
 
     public static void loadModules(ActivityThread at) {
-        var packages = (ArrayMap<?, ?>) XposedHelpers.getObjectField(at, "mPackages");
+        var packages = (ArrayMap<?, ?>) XframeHelpers.getObjectField(at, "mPackages");
         serviceClient.getModulesList().forEach(module -> {
             loadedModules.put(module.packageName, Optional.empty());
             if (!LSPosedContext.loadModule(at, module)) {
@@ -264,7 +264,7 @@ public final class XposedInit {
 
                 Class<?> moduleClass = mcl.loadClass(moduleClassName);
 
-                if (!IXposedMod.class.isAssignableFrom(moduleClass)) {
+                if (!IXframeMod.class.isAssignableFrom(moduleClass)) {
                     Log.e(TAG, "    This class doesn't implement any sub-interface of IXposedMod, skipping it");
                     continue;
                 }
@@ -280,13 +280,13 @@ public final class XposedInit {
                 }
 
                 if (moduleInstance instanceof IXframeHookLoadPackage) {
-                    XposedBridge.hookLoadPackage(new IXframeHookLoadPackage.Wrapper((IXframeHookLoadPackage) moduleInstance));
+                    XframeBridge.hookLoadPackage(new IXframeHookLoadPackage.Wrapper((IXframeHookLoadPackage) moduleInstance));
                     count++;
                 }
 
                 if (moduleInstance instanceof IXframeHookInitPackageResources) {
                     hookResources();
-                    XposedBridge.hookInitPackageResources(new IXframeHookInitPackageResources.Wrapper((IXframeHookInitPackageResources) moduleInstance));
+                    XframeBridge.hookInitPackageResources(new IXframeHookInitPackageResources.Wrapper((IXframeHookInitPackageResources) moduleInstance));
                     count++;
                 }
             } catch (Throwable t) {
@@ -310,11 +310,11 @@ public final class XposedInit {
         }
         var librarySearchPath = sb.toString();
 
-        var initLoader = XposedInit.class.getClassLoader();
+        var initLoader = XframeInit.class.getClassLoader();
         var mcl = LspModuleClassLoader.loadApk(apk, file.preLoadedDexes, librarySearchPath, initLoader);
 
         try {
-            if (mcl.loadClass(XposedBridge.class.getName()).getClassLoader() != initLoader) {
+            if (mcl.loadClass(XframeBridge.class.getName()).getClassLoader() != initLoader) {
                 Log.e(TAG, "  Cannot load module: " + name);
                 Log.e(TAG, "  The Xposed API classes are compiled into the module's APK.");
                 Log.e(TAG, "  This may cause strange issues and must be fixed by the module developer.");

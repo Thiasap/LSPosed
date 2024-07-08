@@ -12,7 +12,7 @@ import de.robv.android.xframe.callbacks.XC_InitPackageResources.InitPackageResou
  * <p>This interface should be implemented by the module's main class. Xposed will take care of
  * registering it as a callback automatically.
  */
-public interface IXposedHookInitPackageResources extends IXposedMod {
+public interface IXframeHookInitPackageResources extends IXframeMod {
     /**
      * This method is called when resources for an app are being initialized.
      * Modules can call special methods of the {@link XResources} class in order to replace resources.
@@ -24,8 +24,8 @@ public interface IXposedHookInitPackageResources extends IXposedMod {
 
     /** @hide */
     final class Wrapper extends XC_InitPackageResources {
-        private final IXposedHookInitPackageResources instance;
-        public Wrapper(IXposedHookInitPackageResources instance) {
+        private final IXframeHookInitPackageResources instance;
+        public Wrapper(IXframeHookInitPackageResources instance) {
             this.instance = instance;
         }
         @Override
